@@ -53,6 +53,7 @@ export interface ProbeAnnotation extends Annotation {
     };
     label: string;
   };
+  isOutOfImage?: boolean;
 }
 
 export interface LengthAnnotation extends Annotation {

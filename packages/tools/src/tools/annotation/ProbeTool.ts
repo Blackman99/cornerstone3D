@@ -109,7 +109,6 @@ class ProbeTool extends AnnotationTool {
     renderingEngineId: string;
   };
   isDrawing: boolean;
-  isHandleOutsideImage: boolean;
 
   constructor(
     toolProps: PublicToolProps = {},
@@ -178,6 +177,7 @@ class ProbeTool extends AnnotationTool {
         label: '',
         handles: { points: [<Types.Point3>[...worldPos]] },
         cachedStats: {},
+        isOutOfImage: false,
       },
     };
 
@@ -289,12 +289,16 @@ class ProbeTool extends AnnotationTool {
     this.editData = null;
     this.isDrawing = false;
 
-    if (
-      this.isHandleOutsideImage &&
-      this.configuration.preventHandleOutsideImage
-    ) {
-      removeAnnotation(annotation.annotationUID);
-      this.isHandleOutsideImage = false;
+    if (this.configuration.preventHandleOutsideImage) {
+      const annotations = getAnnotations(
+        this.getToolName(),
+        element
+      ) as ProbeAnnotation[];
+      annotations.forEach((annotation) => {
+        if (annotation.isOutOfImage) {
+          removeAnnotation(annotation.annotationUID);
+        }
+      });
     }
 
     triggerAnnotationRenderForViewportIds(renderingEngine, viewportIdsToRender);
@@ -480,6 +484,10 @@ class ProbeTool extends AnnotationTool {
         }
       }
 
+      if (annotation.isOutOfImage) {
+        continue;
+      }
+
       // If rendering engine has been destroyed while rendering
       if (!viewport.getRenderingEngine()) {
         console.warn('Rendering Engine has been destroyed');
@@ -571,7 +579,7 @@ class ProbeTool extends AnnotationTool {
         scalarData.length / dimensions[2] / dimensions[1] / dimensions[0];
 
       if (csUtils.indexWithinDimensions(index, dimensions)) {
-        this.isHandleOutsideImage = false;
+        annotation.isOutOfImage = false;
         const yMultiple = dimensions[0] * samplesPerPixel;
         const zMultiple = dimensions[0] * dimensions[1] * samplesPerPixel;
 
@@ -633,7 +641,7 @@ class ProbeTool extends AnnotationTool {
           modalityUnit,
         };
       } else {
-        this.isHandleOutsideImage = true;
+        annotation.isOutOfImage = true;
         cachedStats[targetId] = {
           index,
           Modality: modality,
