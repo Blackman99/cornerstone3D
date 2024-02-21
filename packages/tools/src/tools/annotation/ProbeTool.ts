@@ -294,6 +294,7 @@ class ProbeTool extends AnnotationTool {
       this.configuration.preventHandleOutsideImage
     ) {
       removeAnnotation(annotation.annotationUID);
+      this.isHandleOutsideImage = false;
     }
 
     triggerAnnotationRenderForViewportIds(renderingEngine, viewportIdsToRender);
